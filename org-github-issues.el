@@ -159,17 +159,17 @@
          (params (list :title (if org-github-issues-headline-prefix (format "%s: #%d: %s" repo number title) (format "#%d: %s" number title))
                        :level (+ level 1)
                        :todo-keyword "TODO")))
-      (org-element-interpret-data
-       `(headline ,(if tags
-                       (append params (list :tags tags))
-                     params)
-                  (property-drawer nil ((node-property (:key "GH_URL" :value ,link))
-                                        (node-property (:key "GH_OWNER" :value ,owner))
-                                        (node-property (:key "GH_REPO" :value ,repo))
-                                        (node-property (:key "GH_ISSUE_NO" :value ,number))
-                                        (node-property (:key "GH_ASSIGNE" :value ,assignee))
-                                        ))
-                  ,body))))
+    (org-element-interpret-data
+     `(headline ,(if tags
+                     (append params (list :tags tags))
+                   params)
+                (property-drawer nil ((node-property (:key "GH_URL" :value ,link))
+                                      (node-property (:key "GH_OWNER" :value ,owner))
+                                      (node-property (:key "GH_REPO" :value ,repo))
+                                      (node-property (:key "GH_ISSUE_NO" :value ,number))
+                                      (node-property (:key "GH_ASSIGNE" :value ,assignee))
+                                      ))
+                ,body))))
 
 (defun ogi--delete-org-entry ()
   "Delete org entry at point until the next headline."
