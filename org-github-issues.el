@@ -59,6 +59,11 @@
   :type 'string
   :group 'org-github-issues)
 
+(defcustom org-github-issues-tags nil
+  "Custom tags to add to all new issues."
+  :type 'list
+  :group 'org-github-issues)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Repository structure
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -159,6 +164,7 @@
          (params (list :title (if org-github-issues-headline-prefix (format "%s: #%d: %s" repo number title) (format "#%d: %s" number title))
                        :level (+ level 1)
                        :todo-keyword "TODO")))
+      (when org-github-issues-tags (setq tags (append tags org-github-issues-tags)))
       (org-element-interpret-data
        `(headline ,(if tags
                        (append params (list :tags tags))
