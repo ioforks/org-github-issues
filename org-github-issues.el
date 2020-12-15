@@ -59,6 +59,11 @@
   :type 'list
   :group 'org-github-issues)
 
+(defcustom org-github-issues-auto-schedule "+0d"
+  "Threshold for automatically scheduling new issues."
+  :type 'string
+  :group 'org-github-issues)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Repository structure
 ;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -146,7 +151,11 @@
 
 (defun ogi--labels-to-tags (issue)
   "Return a string of org tags based on labels from ISSUE."
-  (mapcar (lambda (label) (oref label name)) (oref issue labels)))
+  (mapcar (lambda (label) (replace-regexp-in-string "[\s-]+" "_" (oref label name))) (oref issue labels))) ;;Replace chars that are invalid for tags
+
+(defun ogi--scheduled-property (level)
+  "Return the scheduled string property."
+  (if org-github-issues-auto-schedule (format "%s  SCHEDULED: <%s>\n" (make-string level 32) (org-read-date nil nil org-github-issues-auto-schedule)) nil))
 
 (defun ogi--create-org-entry (owner repo level issue)
   "Return a string representation of a LEVEL+1 org TODO headline based on OWNER, REPO, ISSUE."
@@ -156,14 +165,17 @@
          (body (oref issue body))
          (tags (ogi--labels-to-tags issue))
          (link (ogi--issue-url owner repo number))
+         (scheduled (ogi--scheduled-property level))
          (params (list :title (format "#%d: %s" number title)
                        :level (+ level 1)
                        :todo-keyword "TODO")))
-      (when org-github-issues-tags (setq tags (append tags org-github-issues-tags)))
+
+      (when org-github-issues-tags (setq tags (append org-github-issues-tags tags)))
       (org-element-interpret-data
        `(headline ,(if tags
                        (append params (list :tags tags))
                      params)
+                  ,(if scheduled scheduled)
                   (property-drawer nil ((node-property (:key "GH_URL" :value ,link))
                                         (node-property (:key "GH_OWNER" :value ,owner))
                                         (node-property (:key "GH_REPO" :value ,repo))
